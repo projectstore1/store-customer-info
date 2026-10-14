@@ -1,1 +1,12 @@
-
+{
+  "rules": {
+    "shops": {
+      "main": {
+        ".read": true,
+        ".write": true,
+        "customers":    { ".indexOn": ["phone", "name"] },
+        "transactions": { ".indexOn": ["customerId", "createdAt", "type"] }
+      }
+    }
+  }
+}
