@@ -5,7 +5,7 @@
 <title>Debug - Abdullah Store</title>
 </head>
 <body style="font-family:monospace;padding:20px;background:#111;color:#0f0;min-height:100vh">
-<h2>🔍 Firebase Debug</h2>
+<h2>🔍 Full Debug</h2>
 <pre id="log" style="white-space:pre-wrap;font-size:14px;line-height:1.7"></pre>
 
 <script type="module">
@@ -13,65 +13,85 @@ const log = (m, c='#0f0') => {
   document.getElementById('log').innerHTML += `<span style="color:${c}">${m}</span>\n`;
 };
 
-log("URL: " + location.href);
+log("Testing all files...");
 log("──────────────────────");
-log("▶ Step 1: Loading config...");
 
+// Test 1: All JS files accessible
+const filesToTest = [
+  './js/firebase-config.js',
+  './js/firebase-service.js',
+  './js/ui.js',
+  './js/calculator.js',
+  './js/app.js',
+  './css/style.css'
+];
+
+for (const f of filesToTest) {
+  try {
+    const r = await fetch(f, { method: 'HEAD' });
+    if (r.ok) log(`✅ ${f}`);
+    else log(`❌ ${f} → HTTP ${r.status}`, '#f00');
+  } catch (e) {
+    log(`❌ ${f} → ${e.message}`, '#f00');
+  }
+}
+
+log("");
+log("──────────────────────");
+log("▶ Testing config import...");
+
+let cfg;
 try {
-  const cfg = await import('./js/firebase-config.js');
-  log("✅ Config module loaded");
-  log("   apiKey: " + cfg.firebaseConfig.apiKey);
+  cfg = await import('./js/firebase-config.js');
+  log("✅ firebase-config.js imported");
   log("   databaseURL: " + cfg.firebaseConfig.databaseURL);
-  log("   projectId: " + cfg.firebaseConfig.projectId);
   log("   isConfigured: " + cfg.isFirebaseConfigured());
 } catch (e) {
-  log("❌ Config load failed: " + e.message, '#f00');
+  log("❌ " + e.message, '#f00');
   log(e.stack, '#f00');
 }
 
 log("");
-log("▶ Step 2: Loading Firebase SDK from CDN...");
-
-try {
-  const appMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-  log("✅ Firebase app SDK loaded");
-} catch (e) {
-  log("❌ Firebase SDK load failed: " + e.message, '#f00');
-  log("    (this is likely a network/CORS issue)", '#f90');
-}
-
-log("");
-log("▶ Step 3: Initializing Firebase...");
+log("▶ Testing Firebase init...");
 
 try {
   const svc = await import('./js/firebase-service.js');
-  log("✅ Service module loaded");
-  
+  log("✅ firebase-service.js imported");
+
   await svc.initFirebase();
   log("✅ Firebase initialized!");
-} catch (e) {
-  log("❌ Init failed: " + e.message, '#f00');
-  log(e.stack, '#f00');
-}
 
-log("");
-log("▶ Step 4: Reading data from database...");
-
-try {
-  const svc = await import('./js/firebase-service.js');
+  log("");
+  log("▶ Loading data...");
   const data = await svc.loadAllData();
   log("✅ Data loaded!");
   log("   Customers: " + data.customers.length);
   log("   Transactions: " + data.transactions.length);
   log("");
-  log("🎉 ALL OK — main site will work!", '#0f0');
+  log("🎉 ALL GOOD — main site should work!", '#0f0');
 } catch (e) {
-  log("❌ Data load failed: " + e.message, '#f00');
+  log("❌ " + e.message, '#f00');
   log(e.stack, '#f00');
-  log("");
-  log("👉 This is likely a Firebase Rules issue.", '#f90');
-  log("   Firebase Console → Realtime Database → Rules", '#f90');
-  log("   Make sure rules are published.", '#f90');
+}
+
+log("");
+log("▶ Testing ui.js import...");
+try {
+  const ui = await import('./js/ui.js');
+  log("✅ ui.js imported");
+  log("   exports: " + Object.keys(ui).join(', '));
+} catch (e) {
+  log("❌ " + e.message, '#f00');
+}
+
+log("");
+log("▶ Testing calculator.js import...");
+try {
+  const calc = await import('./js/calculator.js');
+  log("✅ calculator.js imported");
+  log("   exports: " + Object.keys(calc).join(', '));
+} catch (e) {
+  log("❌ " + e.message, '#f00');
 }
 </script>
 </body>
