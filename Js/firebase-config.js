@@ -1,8 +1,3 @@
-// =====================================================================
-// Abdullah Store — Firebase Configuration
-// Project: store-customer-info
-// =====================================================================
-
 export const firebaseConfig = {
   apiKey: "AIzaSyDOso9rJpPI3lzAvMQfnb2ZotTv0V393A8",
   authDomain: "store-customer-info.firebaseapp.com",
@@ -14,9 +9,8 @@ export const firebaseConfig = {
   measurementId: "G-Z8V52KHDGR"
 };
 
-export const isFirebaseConfigured = () =>
-  firebaseConfig.apiKey &&
-  !firebaseConfig.apiKey.startsWith("YOUR_") &&
-  firebaseConfig.databaseURL &&
-  !firebaseConfig.databaseURL.includes("YOUR_") &&
-  !firebaseConfig.databaseURL.includes("REPLACE_ME");
+export const isFirebaseConfigured = () => {
+  return firebaseConfig.apiKey &&
+         firebaseConfig.databaseURL &&
+         firebaseConfig.databaseURL.startsWith("https://");
+};
