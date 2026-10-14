@@ -12,5 +12,5 @@ export const firebaseConfig = {
 export const isFirebaseConfigured = () => {
   return firebaseConfig.apiKey &&
          firebaseConfig.databaseURL &&
-         firebaseConfig.databaseURL.startsWith("https://");
+         firebaseConfig.databaseURL.startsWith("https://store-customer-info-default-rtdb.firebaseio.com");
 };
