@@ -533,4 +533,27 @@ function wireUI() {
     });
   });
 
- 
+ initCreditForm();
+}
+
+function openPaymentCustomerPicker() {
+  if (!state.customers.length) { toast('কোনো কাস্টমার নেই', 'error'); return; }
+  document.getElementById('formModalContent').innerHTML = `
+    <h3>টাকা জমা নিন</h3>
+    <p class="sub">কাস্টমার নির্বাচন করুন</p>
+    <select id="pickCust">${state.customers.map(c =>
+      `<option value="${c.id}">${escapeHtml(c.name)} — ${escapeHtml(c.phone)} — বাকি ${bdt(c.balance)}</option>`
+    ).join('')}</select>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="pickCancel">বাতিল</button>
+      <button class="btn-primary" id="pickOk">পরবর্তী</button>
+    </div>`;
+  openModal('formModal');
+  document.getElementById('pickCancel').onclick = () => closeModal('formModal');
+  document.getElementById('pickOk').onclick = () => {
+    const id = document.getElementById('pickCust').value;
+    closeModal('formModal');
+    setTimeout(() => openPaymentForm(id), 200);
+  };
+}
+
