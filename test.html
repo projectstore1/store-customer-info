@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Runtime Test</title>
+</head>
+<body style="background:#000;color:#0f0;font-family:monospace;padding:20px;font-size:14px">
+<pre id="out"></pre>
+<script type="module">
+const log = m => document.getElementById('out').innerHTML += m + "\n";
+
+// Step 1: Config
+try {
+  log("▶ Loading config...");
+  const cfg = await import('./Js/firebase-config.js');
+  log("✅ config loaded");
+  log("   databaseURL: " + cfg.firebaseConfig.databaseURL);
+  log("   isConfigured: " + cfg.isFirebaseConfigured());
+} catch (e) {
+  log("❌ Config FAIL: " + e.message, '#f00');
+  log(e.stack);
+}
+
+// Step 2: SDK
+try {
+  log("");
+  log("▶ Loading firebase-app.js from CDN...");
+  const appMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+  log("✅ CDN SDK loaded");
+} catch (e) {
+  log("❌ CDN FAIL: " + e.message, '#f00');
+  log("👉 This is a network/CORS issue");
+}
+
+// Step 3: Service
+try {
+  log("");
+  log("▶ Init firebase-service...");
+  const svc = await import('./Js/firebase-service.js');
+  log("✅ service loaded");
+  await svc.initFirebase();
+  log("✅ initialized");
+
+  log("");
+  log("▶ Reading data...");
+  const data = await svc.loadAllData();
+  log("✅ data read OK");
+  log("   customers: " + data.customers.length);
+  log("   transactions: " + data.transactions.length);
+  log("");
+  log("🎉 ALL PASSED — main app should work");
+} catch (e) {
+  log("❌ Service FAIL: " + e.message, '#f00');
+  log(e.stack);
+  log("");
+  log("👉 Check Firebase Rules!");
+}
+</script>
+</body>
+</html>
