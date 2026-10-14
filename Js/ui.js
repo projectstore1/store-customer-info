@@ -26,8 +26,7 @@ export function bdt(n) {
 
 export function formatDateTime(ts) {
   if (!ts) return '—';
-  const d = new Date(ts);
-  return d.toLocaleString('bn-BD', {
+  return new Date(ts).toLocaleString('bn-BD', {
     timeZone: 'Asia/Dhaka',
     year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit', second: '2-digit'
