@@ -1,14 +1,8 @@
 (function() {
   'use strict';
 
-  // ==================================================================
-  // BASE QR DATA (TallyPay Bangla original)
-  // ==================================================================
   const BASE_QR = "00020101021126460008TallyPay01020302041005031691005212644597725204541153030505802BD5914Abdullah store6010Mymensingh62280312ST126445977207080000000163047CAB";
 
-  // ==================================================================
-  // EMV TLV PARSER
-  // ==================================================================
   function parseTLV(data) {
     const tags = [];
     let i = 0;
@@ -33,9 +27,6 @@
     return tag + lenStr + value;
   }
 
-  // ==================================================================
-  // CRC-16/CCITT-FALSE
-  // ==================================================================
   function crc16(str) {
     let crc = 0xFFFF;
     for (let i = 0; i < str.length; i++) {
@@ -51,9 +42,6 @@
     return crc.toString(16).toUpperCase().padStart(4, '0');
   }
 
-  // ==================================================================
-  // REBUILD QR WITH AMOUNT
-  // ==================================================================
   function buildQRWithAmount(baseData, amount) {
     const crcIndex = baseData.lastIndexOf('6304');
     if (crcIndex === -1) throw new Error('CRC marker not found in base QR');
@@ -110,9 +98,6 @@
     return beforeCRC + crc;
   }
 
-  // ==================================================================
-  // QR IMAGE RENDERER
-  // ==================================================================
   function renderQR(text, container) {
     let typeNumber = 0;
     const len = text.length;
@@ -156,9 +141,6 @@
     return svg;
   }
 
-  // ==================================================================
-  // UI LOGIC
-  // ==================================================================
   const amountInput = document.getElementById('amountInput');
   const generateBtn = document.getElementById('generateBtn');
   const resultCard = document.getElementById('resultCard');
@@ -169,6 +151,8 @@
   const errorBox = document.getElementById('errorBox');
   const errorText = document.getElementById('errorText');
 
+  if (!amountInput || !generateBtn) return;
+
   let currentAmount = null;
 
   function showError(msg) {
@@ -176,13 +160,11 @@
     errorBox.classList.remove('hidden');
     setTimeout(() => errorBox.classList.add('hidden'), 5000);
   }
-
-  function hideError() {
-    errorBox.classList.add('hidden');
-  }
+  function hideError() { errorBox.classList.add('hidden'); }
 
   function toast(msg, type = 'success') {
     const c = document.getElementById('toastContainer');
+    if (!c) return;
     const el = document.createElement('div');
     el.className = 'toast ' + type;
     el.textContent = msg;
@@ -202,12 +184,8 @@
       return { ok: false, msg: 'শুধু সংখ্যা লিখুন (সর্বোচ্চ ২ দশমিক)' };
     }
     const num = Number(cleaned);
-    if (!isFinite(num) || num <= 0) {
-      return { ok: false, msg: 'পরিমাণ ০ থেকে বড় হতে হবে' };
-    }
-    if (num > 999999999) {
-      return { ok: false, msg: 'পরিমাণ অনেক বেশি' };
-    }
+    if (!isFinite(num) || num <= 0) return { ok: false, msg: 'পরিমাণ ০ থেকে বড় হতে হবে' };
+    if (num > 999999999) return { ok: false, msg: 'পরিমাণ অনেক বেশি' };
     return { ok: true, value: num, str: cleaned };
   }
 
@@ -218,26 +196,11 @@
     });
   }
 
-  // ==================================================================
-  // GENERATE
-  // ==================================================================
-  generateBtn.addEventListener('click', generateQR);
-  amountInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') generateQR();
-  });
-  amountInput.addEventListener('input', () => {
-    amountInput.value = amountInput.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1');
-    hideError();
-  });
-
   function generateQR() {
     hideError();
     const raw = amountInput.value.trim();
     const v = validateAmount(raw);
-    if (!v.ok) {
-      showError(v.msg);
-      return;
-    }
+    if (!v.ok) { showError(v.msg); return; }
 
     generateBtn.disabled = true;
     generateBtn.innerHTML = '<span>⏳</span><span>তৈরি হচ্ছে...</span>';
@@ -245,22 +208,13 @@
     setTimeout(() => {
       try {
         const newQR = buildQRWithAmount(BASE_QR, v.value);
-
-        if (newQR.length > 500) {
-          throw new Error('QR data too long');
-        }
-
+        if (newQR.length > 500) throw new Error('QR data too long');
         renderQR(newQR, qrBox);
         currentAmount = v.value;
-
         qrAmountDisplay.textContent = formatBDT(v.value);
-
         resultCard.classList.remove('hidden');
         resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
         toast('QR সফলভাবে তৈরি হয়েছে', 'success');
-
-        console.log('New QR:', newQR);
       } catch (err) {
         console.error(err);
         showError('QR তৈরি ব্যর্থ: ' + err.message);
@@ -272,9 +226,13 @@
     }, 150);
   }
 
-  // ==================================================================
-  // QUICK AMOUNTS
-  // ==================================================================
+  generateBtn.addEventListener('click', generateQR);
+  amountInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') generateQR(); });
+  amountInput.addEventListener('input', () => {
+    amountInput.value = amountInput.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1');
+    hideError();
+  });
+
   document.querySelectorAll('.quick-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       amountInput.value = btn.dataset.quick;
@@ -283,22 +241,13 @@
     });
   });
 
-  // ==================================================================
-  // DOWNLOAD PNG
-  // ==================================================================
   downloadBtn.addEventListener('click', () => {
-    if (!currentAmount) {
-      toast('প্রথমে QR তৈরি করুন', 'error');
-      return;
-    }
-
+    if (!currentAmount) { toast('প্রথমে QR তৈরি করুন', 'error'); return; }
     const scale = 4;
     const svgEl = qrBox.querySelector('svg');
     if (!svgEl) return;
-
     const baseW = parseInt(svgEl.getAttribute('width'));
     const baseH = parseInt(svgEl.getAttribute('height'));
-
     const headerH = 90;
     const padding = 30;
     const totalW = baseW * scale + padding * 2;
@@ -308,7 +257,6 @@
     canvas.width = totalW;
     canvas.height = totalH;
     const ctx = canvas.getContext('2d');
-
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, totalW, totalH);
 
@@ -319,30 +267,16 @@
     const img = new Image();
     img.onload = () => {
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(
-        img,
-        padding * scale,
-        padding * scale,
-        baseW * scale,
-        baseH * scale
-      );
-
+      ctx.drawImage(img, padding * scale, padding * scale, baseW * scale, baseH * scale);
       const textY = padding * scale + baseH * scale + 40 * scale;
       ctx.fillStyle = '#0a0a0a';
       ctx.textAlign = 'center';
       ctx.font = `700 ${28 * scale}px 'Noto Sans Bengali', system-ui, sans-serif`;
       ctx.fillText(formatBDT(currentAmount), totalW / 2, textY);
-
       ctx.font = `500 ${13 * scale}px 'Noto Sans Bengali', system-ui, sans-serif`;
       ctx.fillStyle = '#737373';
-      ctx.fillText(
-        'Abdullah Store — TallyPay Bangla',
-        totalW / 2,
-        textY + 28 * scale
-      );
-
+      ctx.fillText('Abdullah Store — TallyPay Bangla', totalW / 2, textY + 28 * scale);
       URL.revokeObjectURL(url);
-
       canvas.toBlob((blob) => {
         const dlUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -362,9 +296,6 @@
     img.src = url;
   });
 
-  // ==================================================================
-  // RESET
-  // ==================================================================
   resetBtn.addEventListener('click', () => {
     resultCard.classList.add('hidden');
     amountInput.value = '';
@@ -373,22 +304,5 @@
     currentAmount = null;
   });
 
-  // ==================================================================
-  // AUTO-FOCUS
-  // ==================================================================
-  window.addEventListener('load', () => {
-    amountInput.focus();
-  });
-
-  // ==================================================================
-  // TEST HELPER (console এ চালান: __testQR(100))
-  // ==================================================================
-  window.__testQR = function(amount) {
-    const result = buildQRWithAmount(BASE_QR, amount);
-    console.log('Amount:', amount);
-    console.log('Length:', result.length);
-    console.log('Payload:', result);
-    console.log('CRC:', result.slice(-4));
-    return result;
-  };
+  window.addEventListener('load', () => { amountInput.focus(); });
 })();
