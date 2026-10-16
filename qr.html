@@ -4,31 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Payment - Abdullah Store</title>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+<link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/qr.css">
 </head>
-<body>
+<body class="has-bottom-nav">
 
 <header class="header">
   <div class="header-inner">
-    <a href="index.html" class="brand-wrap">
+    <div class="brand-wrap">
       <div class="logo">AS</div>
       <div>
-        <div class="brand">Abdullah Store</div>
-        <div class="brand-sub">কাস্টমার ক্রেডিট ব্যবস্থাপনা</div>
+        <h1 class="brand">Abdullah Store</h1>
+        <p class="brand-sub">পেমেন্ট QR</p>
       </div>
-    </a>
-    <a href="index.html" class="back-btn">← ফিরে যান</a>
+    </div>
   </div>
 </header>
 
 <main class="container">
 
-  <!-- Input Card -->
   <div class="card">
     <h2>💳 পেমেন্ট QR তৈরি করুন</h2>
     <p class="sub">টাকার পরিমাণ লিখে QR কোড তৈরি করুন — TallyPay Bangla</p>
@@ -36,13 +33,7 @@
     <label class="form-label" for="amountInput">টাকার পরিমাণ (৳)</label>
     <div class="amount-input-wrap">
       <span class="currency">৳</span>
-      <input
-        type="text"
-        id="amountInput"
-        inputmode="decimal"
-        placeholder="0.00"
-        autocomplete="off"
-      >
+      <input type="text" id="amountInput" inputmode="decimal" placeholder="0.00" autocomplete="off">
     </div>
 
     <div class="quick-amounts">
@@ -65,7 +56,6 @@
     </div>
   </div>
 
-  <!-- QR Result Card -->
   <div class="card hidden" id="resultCard">
     <div class="qr-result">
       <div class="success-badge">
@@ -109,11 +99,30 @@
 
 <div id="toastContainer" class="toast-container"></div>
 
-<!-- QR Code Generator Library -->
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">হোম</span>
+  </a>
+  <a href="customers.html" class="nav-item">
+    <span class="nav-icon">👥</span>
+    <span class="nav-label">কাস্টমার</span>
+  </a>
+  <a href="credit.html" class="nav-item nav-center">
+    <span class="nav-icon-plus">+</span>
+    <span class="nav-label">বাকি</span>
+  </a>
+  <a href="history.html" class="nav-item">
+    <span class="nav-icon">📜</span>
+    <span class="nav-label">ইতিহাস</span>
+  </a>
+  <a href="qr.html" class="nav-item active">
+    <span class="nav-icon">💳</span>
+    <span class="nav-label">QR</span>
+  </a>
+</nav>
+
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-
-<!-- Custom JS -->
-<script src="Js/qr.js"></script>
-
+<script src="js/qr.js"></script>
 </body>
 </html>
