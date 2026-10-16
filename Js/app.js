@@ -321,7 +321,7 @@ function openPaymentForm(customerId) {
       <label>পেমেন্ট পদ্ধতি (ঐচ্ছিক)</label>
       <select id="payMethod">
         <option value="">-- নির্বাচন করুন --</option>
-        <option>নগদ</option><option>bKash</option><option>Nagad</option><option>Rocket</option><option>ব্যাংক</option>
+        <option>cash</option><option>Bangla qr</option><option>Nagad</option><option>bkash</option><option>Rocket</option>
       </select>
       <label>নোট (ঐচ্ছিক)</label><input id="payNote">
       <div class="modal-actions">
