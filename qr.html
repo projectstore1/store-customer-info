@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Payment - Abdullah Store</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/qr.css">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="index.html" class="brand-wrap">
+      <div class="logo">AS</div>
+      <div>
+        <div class="brand">Abdullah Store</div>
+        <div class="brand-sub">কাস্টমার ক্রেডিট ব্যবস্থাপনা</div>
+      </div>
+    </a>
+    <a href="index.html" class="back-btn">← ফিরে যান</a>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Input Card -->
+  <div class="card">
+    <h2>💳 পেমেন্ট QR তৈরি করুন</h2>
+    <p class="sub">টাকার পরিমাণ লিখে QR কোড তৈরি করুন — TallyPay Bangla</p>
+
+    <label class="form-label" for="amountInput">টাকার পরিমাণ (৳)</label>
+    <div class="amount-input-wrap">
+      <span class="currency">৳</span>
+      <input
+        type="text"
+        id="amountInput"
+        inputmode="decimal"
+        placeholder="0.00"
+        autocomplete="off"
+      >
+    </div>
+
+    <div class="quick-amounts">
+      <button class="quick-btn" data-quick="50">৳50</button>
+      <button class="quick-btn" data-quick="100">৳100</button>
+      <button class="quick-btn" data-quick="250">৳250</button>
+      <button class="quick-btn" data-quick="500">৳500</button>
+      <button class="quick-btn" data-quick="1000">৳1000</button>
+      <button class="quick-btn" data-quick="2000">৳2000</button>
+    </div>
+
+    <button class="btn-primary" id="generateBtn">
+      <span>🔳</span>
+      <span>QR তৈরি করুন</span>
+    </button>
+
+    <div id="errorBox" class="error-box hidden">
+      <span>⚠️</span>
+      <span id="errorText"></span>
+    </div>
+  </div>
+
+  <!-- QR Result Card -->
+  <div class="card hidden" id="resultCard">
+    <div class="qr-result">
+      <div class="success-badge">
+        <span>✓</span>
+        <span>QR সফলভাবে তৈরি হয়েছে</span>
+      </div>
+
+      <div class="qr-box" id="qrBox"></div>
+
+      <div class="qr-amount">
+        <small>পরিমাণ</small>
+        <span id="qrAmountDisplay">৳0.00</span>
+      </div>
+
+      <div class="qr-merchant">
+        পেমেন্ট যাবে → <strong>TallyPay Bangla (Abdullah Store)</strong>
+      </div>
+
+      <button class="btn-primary" id="downloadBtn">
+        <span>⬇️</span>
+        <span>QR PNG ডাউনলোড করুন</span>
+      </button>
+
+      <button class="btn-secondary" id="resetBtn">
+        <span>🔄</span>
+        <span>নতুন QR তৈরি করুন</span>
+      </button>
+
+      <div class="info-line">
+        <span>পদ্ধতি</span>
+        <span>TallyPay Bangla (EMV QR)</span>
+      </div>
+      <div class="info-line">
+        <span>মার্চেন্ট</span>
+        <span>Abdullah Store, Mymensingh</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- QR Code Generator Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+<!-- Custom JS -->
+<script src="Js/qr.js"></script>
+
+</body>
+</html>
