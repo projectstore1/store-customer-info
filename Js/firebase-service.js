@@ -8,8 +8,10 @@ export async function initFirebase() {
     throw new Error("Firebase configuration ভুল বা incomplete।");
   }
 
-  const appMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-  const dbMod  = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+  const [appMod, dbMod] = await Promise.all([
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js")
+  ]);
 
   const app = appMod.initializeApp(firebaseConfig);
   db = dbMod.getDatabase(app);
@@ -89,7 +91,7 @@ export async function addTransaction({ customerId, type, amount, item, qty, note
   });
 
   if (!result.committed) {
-    throw new Error("ব্যালেন্স আপডেট ব্যর্থ হয়েছে (সম্ভবত বাকির বেশি জমা)।");
+    throw new Error("ব্যালেন্স আপডেট ব্যর্থ (সম্ভবত বাকির বেশি জমা)।");
   }
 
   const snap = await get(custRef);
