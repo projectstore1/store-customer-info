@@ -1,6 +1,8 @@
 export function initCalculator() {
   const fab = document.getElementById('calcFab');
   const modal = document.getElementById('calcModal');
+  if (!fab || !modal) return;
+
   const close = document.getElementById('calcClose');
   const dispExpr = document.getElementById('calcExpr');
   const dispRes = document.getElementById('calcResult');
