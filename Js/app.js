@@ -10,7 +10,7 @@ import {
 
 import { initCalculator } from './calculator.js';
 
-const state = {
+export const state = {
   customers: [],
   transactions: []
 };
@@ -26,12 +26,21 @@ const state = {
 
   document.getElementById('app').classList.remove('hidden');
   hideLoader();
-  wireUI();
   initCalculator();
+  wireGlobalUI();
 
   try {
     await bootstrapData();
     subscribeRealtime();
+
+    // page detection
+    const path = location.pathname.toLowerCase();
+    if (path.includes('customers')) initCustomersPage();
+    if (path.includes('credit')) initCreditPage();
+    if (path.includes('history')) initHistoryPage();
+    if (!path.includes('customers') && !path.includes('credit') && !path.includes('history')) {
+      initDashboard();
+    }
   } catch (err) {
     console.error("Data load failed:", err);
     toast('ডেটা লোড ব্যর্থ: ' + err.message, 'error', 6000);
@@ -40,9 +49,10 @@ const state = {
 
 function showSetupError(msg) {
   hideLoader();
-  document.getElementById('app').classList.add('hidden');
-  document.getElementById('setupScreen').classList.remove('hidden');
-  document.getElementById('setupMsg').textContent = msg;
+  document.getElementById('app')?.classList.add('hidden');
+  document.getElementById('setupScreen')?.classList.remove('hidden');
+  const el = document.getElementById('setupMsg');
+  if (el) el.textContent = msg;
 }
 
 async function bootstrapData() {
@@ -74,6 +84,8 @@ function renderAll() {
 }
 
 function renderSummary() {
+  const s1 = document.getElementById('cardTotalSales');
+  if (!s1) return;
   let sales = 0, paid = 0, due = 0, oweCount = 0;
   for (const c of state.customers) {
     sales += Number(c.totalSales || 0);
@@ -81,7 +93,7 @@ function renderSummary() {
     const bal = Number(c.balance || 0);
     if (bal > 0) { due += bal; oweCount++; }
   }
-  document.getElementById('cardTotalSales').textContent = bdt(sales);
+  s1.textContent = bdt(sales);
   document.getElementById('cardOutstanding').textContent = bdt(due);
   document.getElementById('cardCollected').textContent = bdt(paid);
   document.getElementById('cardOutstandingCount').textContent = oweCount;
@@ -89,13 +101,14 @@ function renderSummary() {
 
 function renderCustomersList() {
   const wrap = document.getElementById('customersList');
+  if (!wrap) return;
   const empty = document.getElementById('customersEmpty');
   if (!state.customers.length) {
     wrap.innerHTML = '';
-    empty.classList.remove('hidden');
+    empty?.classList.remove('hidden');
     return;
   }
-  empty.classList.add('hidden');
+  empty?.classList.add('hidden');
   wrap.innerHTML = state.customers
     .sort((a,b) => (b.createdAt||0)-(a.createdAt||0))
     .map(c => {
@@ -104,8 +117,19 @@ function renderCustomersList() {
         ? '<span class="badge paid">সম্পূর্ণ পরিশোধিত</span>'
         : '<span class="badge owe">বাকি আছে</span>';
       return `<div class="customer-card" data-id="${c.id}">
-        <div><h4>${escapeHtml(c.name)} ${badge}</h4><p class="muted">📞 ${escapeHtml(c.phone)}</p></div>
-        <div style="text-align:right"><div class="amt">${bdt(bal)}</div><small class="muted">বর্তমান বাকি</small></div>
+        <div>
+          <h4>${escapeHtml(c.name)} ${badge}</h4>
+          <p class="muted">
+            <a href="tel:${escapeHtml(c.phone)}" class="phone-link" onclick="event.stopPropagation()">
+              <span class="dial-icon">📞</span>
+              <span>${escapeHtml(c.phone)}</span>
+            </a>
+          </p>
+        </div>
+        <div style="text-align:right">
+          <div class="amt">${bdt(bal)}</div>
+          <small class="muted">বর্তমান বাকি</small>
+        </div>
       </div>`;
     }).join('');
   wrap.querySelectorAll('.customer-card').forEach(el => {
@@ -115,6 +139,7 @@ function renderCustomersList() {
 
 function renderHistory() {
   const wrap = document.getElementById('historyList');
+  if (!wrap) return;
   const empty = document.getElementById('historyEmpty');
   const q = (document.getElementById('historySearch')?.value || '').trim().toLowerCase();
   const from = document.getElementById('historyFrom')?.value || '';
@@ -126,14 +151,16 @@ function renderHistory() {
   if (from) list = list.filter(t => t.createdAt >= new Date(from).getTime());
   if (to) list = list.filter(t => t.createdAt <= new Date(to).getTime() + 86399000);
 
-  if (!list.length) { wrap.innerHTML = ''; empty.classList.remove('hidden'); return; }
-  empty.classList.add('hidden');
+  if (!list.length) { wrap.innerHTML = ''; empty?.classList.remove('hidden'); return; }
+  empty?.classList.add('hidden');
 
   wrap.innerHTML = list.map(t => {
     const isCredit = t.type === 'credit';
     return `<div class="history-item ${isCredit?'credit':'payment'}">
-      <div><h5>${escapeHtml(t.customerName||'')}</h5>
-      <div class="meta">📞 ${escapeHtml(t.customerPhone||'')} · ${formatDateTime(t.createdAt)}</div></div>
+      <div>
+        <h5>${escapeHtml(t.customerName||'')}</h5>
+        <div class="meta">📞 ${escapeHtml(t.customerPhone||'')} · ${formatDateTime(t.createdAt)}</div>
+      </div>
       <div class="amt ${isCredit?'credit':'payment'}">${isCredit?'+':'−'} ${bdt(t.amount)}
       <div style="font-size:11px;color:#737373;font-weight:500">বাকি: ${bdt(t.balanceAfter)}</div></div>
       ${t.item?`<div class="desc">📦 ${escapeHtml(t.item)}${t.qty?' — '+t.qty:''}</div>`:''}
@@ -152,8 +179,9 @@ function renderCreditCustomerOptions() {
 }
 
 function renderSearch() {
-  const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
   const wrap = document.getElementById('searchResults');
+  if (!wrap) return;
+  const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
   if (!q) { wrap.innerHTML = ''; return; }
   const matches = state.customers.filter(c =>
     (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q));
@@ -164,9 +192,17 @@ function renderSearch() {
   wrap.innerHTML = matches.map(c => {
     const bal = Number(c.balance || 0);
     return `<div class="result-item" data-id="${c.id}">
-      <div class="result-info"><h4>${escapeHtml(c.name)}</h4><p>📞 ${escapeHtml(c.phone)}</p></div>
+      <div class="result-info">
+        <h4>${escapeHtml(c.name)}</h4>
+        <p>
+          <a href="tel:${escapeHtml(c.phone)}" class="phone-link" onclick="event.stopPropagation()">
+            <span class="dial-icon">📞</span>
+            <span>${escapeHtml(c.phone)}</span>
+          </a>
+        </p>
+      </div>
       <div class="result-balance ${bal<=0?'zero-balance':''}">${bdt(bal)}
-      <small>${bal<=0?'সম্পূর্ণ পরিশোধিত':'বর্তমান বাকি'}</small></div>
+      <small>${bal<=0?'সম্পূর্ণ পরিশোধিত':'বর্তমান বকেয়া'}</small></div>
     </div>`;
   }).join('');
   wrap.querySelectorAll('.result-item').forEach(el => {
@@ -174,7 +210,7 @@ function renderSearch() {
   });
 }
 
-function showCustomerDetails(id) {
+export function showCustomerDetails(id) {
   const c = state.customers.find(x => x.id === id);
   if (!c) return;
   const txs = state.transactions
@@ -184,7 +220,13 @@ function showCustomerDetails(id) {
 
   document.getElementById('customerModalContent').innerHTML = `
     <h3>${escapeHtml(c.name)}</h3>
-    <p class="sub">📞 ${escapeHtml(c.phone)}${c.address ? ' · '+escapeHtml(c.address) : ''}</p>
+    <p class="sub">
+      <a href="tel:${escapeHtml(c.phone)}" class="phone-link" title="কল করুন">
+        <span class="dial-icon">📞</span>
+        <span>${escapeHtml(c.phone)}</span>
+      </a>
+      ${c.address ? ' · '+escapeHtml(c.address) : ''}
+    </p>
     <div class="balance-highlight">
       <span>বর্তমান বাকি</span>
       <strong class="${bal<=0?'zero-balance':''}" style="${bal<=0?'color:#15803d':''}">${bdt(bal)}</strong>
@@ -215,14 +257,13 @@ function showCustomerDetails(id) {
   document.getElementById('cdPayBtn').onclick = () => { closeModal('customerModal'); openPaymentForm(id); };
   document.getElementById('cdCreditBtn').onclick = () => {
     closeModal('customerModal');
-    selectTab('addCredit');
-    setTimeout(() => { document.getElementById('creditCustomer').value = id; }, 50);
+    window.location.href = 'credit.html';
   };
   document.getElementById('cdEditBtn').onclick = () => openEditCustomer(id);
   document.getElementById('cdDeleteBtn').onclick = () => deleteCustomerFlow(id);
 }
 
-function openAddCustomer() {
+export function openAddCustomer() {
   document.getElementById('formModalContent').innerHTML = `
     <h3>নতুন কাস্টমার</h3>
     <p class="sub">কাস্টমারের তথ্য যোগ করুন</p>
@@ -305,7 +346,7 @@ async function deleteCustomerFlow(id) {
   } catch (err) { toast('ব্যর্থ: ' + err.message, 'error'); }
 }
 
-function openPaymentForm(customerId) {
+export function openPaymentForm(customerId) {
   const c = state.customers.find(x => x.id === customerId);
   if (!c) return;
   const bal = Number(c.balance || 0);
@@ -313,7 +354,7 @@ function openPaymentForm(customerId) {
 
   document.getElementById('formModalContent').innerHTML = `
     <h3>টাকা জমা নিন</h3>
-    <p class="sub">${escapeHtml(c.name)} — 📞 ${escapeHtml(c.phone)}</p>
+    <p class="sub">${escapeHtml(c.name)} — ${escapeHtml(c.phone)}</p>
     <div class="balance-highlight"><span>বর্তমান বাকি</span><strong>${bdt(bal)}</strong></div>
     <form id="payForm">
       <label>জমার পরিমাণ (৳) *</label>
@@ -321,7 +362,7 @@ function openPaymentForm(customerId) {
       <label>পেমেন্ট পদ্ধতি (ঐচ্ছিক)</label>
       <select id="payMethod">
         <option value="">-- নির্বাচন করুন --</option>
-        <option>cash</option><option>Bangla qr</option><option>Nagad</option><option>bkash</option><option>Rocket</option>
+        <option>নগদ</option><option>bKash</option><option>Nagad</option><option>Rocket</option><option>ব্যাংক</option>
       </select>
       <label>নোট (ঐচ্ছিক)</label><input id="payNote">
       <div class="modal-actions">
@@ -358,8 +399,52 @@ function openPaymentForm(customerId) {
   };
 }
 
-function initCreditForm() {
+export function openPaymentCustomerPicker() {
+  if (!state.customers.length) { toast('কোনো কাস্টমার নেই', 'error'); return; }
+  document.getElementById('formModalContent').innerHTML = `
+    <h3>টাকা জমা নিন</h3>
+    <p class="sub">কাস্টমার নির্বাচন করুন</p>
+    <select id="pickCust">
+      ${state.customers.map(c => `<option value="${c.id}">${escapeHtml(c.name)} — ${escapeHtml(c.phone)} — বাকি ${bdt(c.balance)}</option>`).join('')}
+    </select>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="pickCancel">বাতিল</button>
+      <button class="btn-primary" id="pickOk">পরবর্তী</button>
+    </div>`;
+  openModal('formModal');
+  document.getElementById('pickCancel').onclick = () => closeModal('formModal');
+  document.getElementById('pickOk').onclick = () => {
+    const id = document.getElementById('pickCust').value;
+    closeModal('formModal');
+    setTimeout(() => openPaymentForm(id), 200);
+  };
+}
+
+let globalWired = false;
+function wireGlobalUI() {
+  if (globalWired) return;
+  globalWired = true;
+  document.querySelectorAll('[data-open]').forEach(b => {
+    b.addEventListener('click', () => {
+      const w = b.dataset.open;
+      if (w === 'customer') openAddCustomer();
+      if (w === 'payment') openPaymentCustomerPicker();
+    });
+  });
+}
+
+function initDashboard() {
+  const searchBtn = document.getElementById('searchBtn');
+  const searchInput = document.getElementById('searchInput');
+  if (searchBtn) searchBtn.addEventListener('click', renderSearch);
+  if (searchInput) searchInput.addEventListener('input', renderSearch);
+}
+
+function initCustomersPage() { /* list already rendered */ }
+
+function initCreditPage() {
   const form = document.getElementById('creditForm');
+  if (!form) return;
   const total = document.getElementById('creditTotal');
   const initial = document.getElementById('creditInitial');
   const remaining = document.getElementById('creditRemaining');
@@ -397,72 +482,26 @@ function initCreditForm() {
         await addTransaction({ customerId, type: 'payment', amount: i, note: 'প্রাথমিক জমা' });
       }
       toast('বাকি যোগ হয়েছে', 'success');
-      form.reset(); updateRemain();
-      selectTab('dashboard');
+      form.reset();
+      updateRemain();
+      setTimeout(() => window.location.href = 'index.html', 800);
     } catch (err) {
       toast('সংরক্ষণ ব্যর্থ: ' + err.message, 'error');
-    } finally {
       btn.disabled = false; btn.textContent = 'সংরক্ষণ করুন';
     }
   };
 }
 
-function selectTab(name) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + name));
-}
-
-let uiWired = false;
-function wireUI() {
-  if (uiWired) return;
-  uiWired = true;
-
-  document.querySelectorAll('.tab').forEach(t => {
-    t.addEventListener('click', () => selectTab(t.dataset.tab));
-  });
-
-  document.getElementById('searchBtn').addEventListener('click', renderSearch);
-  document.getElementById('searchInput').addEventListener('input', renderSearch);
-
-  document.getElementById('historySearch').addEventListener('input', renderHistory);
-  document.getElementById('historyFrom').addEventListener('change', renderHistory);
-  document.getElementById('historyTo').addEventListener('change', renderHistory);
-  document.getElementById('historyClear').addEventListener('click', () => {
-    document.getElementById('historySearch').value = '';
-    document.getElementById('historyFrom').value = '';
-    document.getElementById('historyTo').value = '';
+function initHistoryPage() {
+  const s = document.getElementById('historySearch');
+  const f = document.getElementById('historyFrom');
+  const t = document.getElementById('historyTo');
+  const c = document.getElementById('historyClear');
+  if (s) s.addEventListener('input', renderHistory);
+  if (f) f.addEventListener('change', renderHistory);
+  if (t) t.addEventListener('change', renderHistory);
+  if (c) c.addEventListener('click', () => {
+    s.value = ''; f.value = ''; t.value = '';
     renderHistory();
   });
-
-  document.querySelectorAll('[data-open]').forEach(b => {
-    b.addEventListener('click', () => {
-      const w = b.dataset.open;
-      if (w === 'customer') openAddCustomer();
-      if (w === 'credit') selectTab('addCredit');
-      if (w === 'payment') openPaymentCustomerPicker();
-    });
-  });
-
-  initCreditForm();
-}
-
-function openPaymentCustomerPicker() {
-  if (!state.customers.length) { toast('কোনো কাস্টমার নেই', 'error'); return; }
-  document.getElementById('formModalContent').innerHTML = `
-    <h3>টাকা জমা নিন</h3>
-    <p class="sub">কাস্টমার নির্বাচন করুন</p>
-    <select id="pickCust">
-      ${state.customers.map(c => `<option value="${c.id}">${escapeHtml(c.name)} — ${escapeHtml(c.phone)} — বাকি ${bdt(c.balance)}</option>`).join('')}
-    </select>
-    <div class="modal-actions">
-      <button class="btn-secondary" id="pickCancel">বাতিল</button>
-      <button class="btn-primary" id="pickOk">পরবর্তী</button>
-    </div>`;
-  openModal('formModal');
-  document.getElementById('pickCancel').onclick = () => closeModal('formModal');
-  document.getElementById('pickOk').onclick = () => {
-    const id = document.getElementById('pickCust').value;
-    closeModal('formModal');
-    setTimeout(() => openPaymentForm(id), 200);
-  };
 }
