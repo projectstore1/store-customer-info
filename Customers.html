@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>কাস্টমারের তালিকা - Abdullah Store</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="has-bottom-nav">
+
+<div id="globalLoader" class="global-loader">
+  <div class="spinner"></div>
+  <p>লোড হচ্ছে...</p>
+</div>
+
+<section id="setupScreen" class="auth-screen hidden">
+  <div class="auth-card">
+    <h1>Abdullah Store</h1>
+    <p style="color:#b91c1c;font-weight:600;margin-top:8px">⚙️ সেটআপ প্রয়োজন</p>
+    <p id="setupMsg" style="font-size:14px;color:#404040;line-height:1.9;margin-top:12px"></p>
+  </div>
+</section>
+
+<div id="app" class="app hidden">
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand-wrap">
+        <div class="logo">AS</div>
+        <div>
+          <h1 class="brand">Abdullah Store</h1>
+          <p class="brand-sub">কাস্টমারের তালিকা</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="panel-head">
+      <h2>সব কাস্টমার</h2>
+      <button class="btn-primary" data-open="customer">+ নতুন</button>
+    </div>
+    <div id="customersList" class="customers-list"></div>
+    <div id="customersEmpty" class="empty-state hidden"><p>কোনো কাস্টমার নেই।</p></div>
+  </main>
+
+  <div id="customerModal" class="modal hidden"><div class="modal-box" id="customerModalContent"></div></div>
+  <div id="formModal" class="modal hidden"><div class="modal-box" id="formModalContent"></div></div>
+
+  <button id="calcFab" class="calc-fab" title="Calculator">🧮</button>
+  <div id="calcModal" class="calc-modal hidden">
+    <div class="calc-box">
+      <div class="calc-head"><span>Calculator</span><button id="calcClose">✕</button></div>
+      <div class="calc-display">
+        <div id="calcExpr" class="calc-expr"></div>
+        <div id="calcResult" class="calc-result">0</div>
+      </div>
+      <div class="calc-actions">
+        <button id="calcHistoryBtn">History</button>
+        <button id="calcCopyBtn">Copy Result</button>
+      </div>
+      <div id="calcHistoryList" class="calc-history hidden"></div>
+      <div class="calc-grid">
+        <button data-k="C" class="op">C</button>
+        <button data-k="±" class="op">±</button>
+        <button data-k="%" class="op">%</button>
+        <button data-k="÷" class="op">÷</button>
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+        <button data-k="×" class="op">×</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="−" class="op">−</button>
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k="+" class="op">+</button>
+        <button data-k="0">0</button><button data-k=".">.</button>
+        <button data-k="⌫" class="op">⌫</button>
+        <button data-k="=" class="equals">=</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="index.html" class="nav-item">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">হোম</span>
+  </a>
+  <a href="customers.html" class="nav-item active">
+    <span class="nav-icon">👥</span>
+    <span class="nav-label">কাস্টমার</span>
+  </a>
+  <a href="credit.html" class="nav-item nav-center">
+    <span class="nav-icon-plus">+</span>
+    <span class="nav-label">বাকি</span>
+  </a>
+  <a href="history.html" class="nav-item">
+    <span class="nav-icon">📜</span>
+    <span class="nav-label">ইতিহাস</span>
+  </a>
+  <a href="qr.html" class="nav-item">
+    <span class="nav-icon">💳</span>
+    <span class="nav-label">QR</span>
+  </a>
+</nav>
+
+<script type="module" src="js/customers.js"></script>
+</body>
+</html>
