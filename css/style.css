@@ -160,6 +160,36 @@ input,select{font-family:inherit}
 .phone-link:hover .dial-icon{background:var(--black);color:var(--white)}
 
 /* ============ Bottom Navigation ============ */
+
+/* ============ App Footer ============ */
+.app-footer {
+  text-align: center;
+  padding: 24px 16px 100px;
+  color: var(--grey-500);
+  font-size: 12px;
+  line-height: 1.7;
+  border-top: 1px solid var(--grey-200);
+  margin-top: 30px;
+}
+.app-footer p {
+  margin: 2px 0;
+}
+.app-footer strong {
+  color: var(--black);
+  font-weight: 600;
+}
+.app-footer .footer-sub {
+  font-size: 11px;
+  color: var(--grey-500);
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .app-footer {
+    padding: 20px 16px 100px;
+    font-size: 11px;
+  }
+}
 body.has-bottom-nav{padding-bottom:78px}
 
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--grey-200);display:flex;justify-content:space-around;align-items:center;padding:8px 4px;z-index:300;box-shadow:0 -2px 12px rgba(0,0,0,.06);animation:slideUpNav .35s var(--ease)}
